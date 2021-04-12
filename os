@@ -20,6 +20,8 @@ do
 
     elif [ "$var" == "manage-server" ]
     then
+        read -p "Keystone : " ks
+        source ~/$ks
         figlet -f standard OpenStack
         echo "1. Create Server"
         echo "2. List Server"
