@@ -16,7 +16,7 @@ elif [[ -e /etc/fedora-release ]]; then
 	group_name="nobody"
 else
 	echo "This installer seems to be running on an unsupported distribution.
-Supported distributions are Ubuntu, CentOS, and Fedora."
+Supported distributions are Ubuntu, and CentOS"
 	exit
 fi
 
@@ -26,4 +26,10 @@ if [[ "$os" == "centos" && "$os_version" == "7" ]]; then
     yum install -y wget git curl figlet
 	git clone https://github.com/smkn1kejobong/openstack
 	chmod 755 openstack/setup.sh && bash openstack/setup.sh
-	
+
+elif [[ "$os" == "ubuntu" && "$os_version" == "1804" ]]; then
+	apt update
+
+else
+	echo "This installer seems to be running on an unsupported distribution.
+Supported distributions are Ubuntu, and CentOS"
