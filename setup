@@ -24,7 +24,6 @@ if [[ "$os" == "centos" && "$os_version" == "7" ]]; then
     yum update
     yum install epel-release
     yum install -y wget git curl figlet
-	# OpenStack Installation
 	git clone https://github.com/smkn1kejobong/openstack
 	chmod 755 openstack/setup.sh && bash openstack/setup.sh
 	
