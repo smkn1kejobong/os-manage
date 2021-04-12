@@ -20,6 +20,7 @@ do
 
     elif [ "$var" == "manage-server" ]
     then
+        ls -la ~/
         read -p "Keystone : " ks
         source ~/$ks
         figlet -f standard OpenStack
