@@ -1,35 +1,8 @@
 #!/bin/bash
 
-# Detect OS
-# $os_version variables aren't always in use, but are kept here for convenience
-if grep -qs "ubuntu" /etc/os-release; then
-	os="ubuntu"
-	os_version=$(grep 'VERSION_ID' /etc/os-release | cut -d '"' -f 2 | tr -d '.')
-	group_name="nogroup"
-elif [[ -e /etc/centos-release ]]; then
-	os="centos"
-	os_version=$(grep -oE '[0-9]+' /etc/centos-release | head -1)
-	group_name="nobody"
-elif [[ -e /etc/fedora-release ]]; then
-	os="fedora"
-	os_version=$(grep -oE '[0-9]+' /etc/fedora-release | head -1)
-	group_name="nobody"
-else
-	echo "This installer seems to be running on an unsupported distribution.
-Supported distributions are Ubuntu, and CentOS"
-	exit
-fi
+yum update
+yum install -y epel-release
+yum install -y git curl wget figlet 
 
-if [[ "$os" == "centos" && "$os_version" == "7" ]]; then
-    yum update
-    yum install epel-release
-    yum install -y wget git curl figlet
-	git clone https://github.com/smkn1kejobong/openstack
-	chmod 755 openstack/setup.sh && bash openstack/setup.sh
-
-elif [[ "$os" == "ubuntu" && "$os_version" == "1804" ]]; then
-	apt update
-
-else
-	echo "This installer seems to be running on an unsupported distribution.
-Supported distributions are Ubuntu, and CentOS"
+git clone https://github.com/smkn1kejobong/openstack
+cd openstack && chmod 755 setup.sh && ./setup.sh
