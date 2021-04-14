@@ -1,154 +1,101 @@
 #!/bin/bash
 
-helpFunction()
-{
-    lst=("server" "image" "flavor" "network")
-    echo "Usage: $0 "
-    echo -e "\tmanage-${lst[0]} Manage ${lst[0]} OpenStack"
-    echo -e "\tmanage-${lst[1]} Manage ${lst[1]} OpenStack"
-    echo -e "\tmanage-${lst[2]} Manage ${lst[2]} OpenStack"
-    echo -e "\tmanage-${lst[3]} Manage ${lst[3]} OpenStack"
-    exit 1 # Exit script after printing help
-}
-
 for var in "$@"
 do
-    if [ -z "$var" ]
-    then
-        helpFunction
+    option1=${2}
+    option2=${3}
+    option3=${4}
 
+    helper() {
+        echo "Usage: $0 ..."
+    }
 
-# Manage Server Openstack
-    elif [ "$var" == "manage-server" ]
-    then
-        ls -la ~/
-        read -p "Keystone : " ks
-        source ~/$ks
+    banner() {
+        clear
         figlet -f standard OpenStack
-        echo "1. Create Server"
-        echo "2. List Server"
-        echo "3. Delete Server"
-        echo ""
-        read -p "Input : " s1
-        case $s1 in
-            1)
-            echo "Server Create"
-            echo "1. Single Server"
-            echo "2. Many Server"
-            echo "" 
-            read -p "Input : " ss1
-            case $ss1 in
-                1)
-                    clear
-                    figlet -f standard openstack
-                    echo "Server Create"
-                    echo ""
-                    read -p "Name Server : " ns
-                    openstack image list
-                    read -p "Image : " im
-                    openstack flavor list
-                    read -p "Flavor : " fl
-                    openstack network list
-                    read -p "Network : " nw
-                    openstack server create --image $im --flavor $fl --nic net-id=$nw --wait $ns
-                ;;
-                2)
-                    clear
-                    figlet -f standard openstack
-                    echo "Server Create"
-                    echo ""
-                    read -p "Name Server : " ns
-                    read -p "Image : " im
-                    read -p "Flavor : " fl
-                    read -p "Network : " nw
-                    read -p "Loop : " a
+    }
 
-                    for ((i=1;i<=$a;i++)); 
-                    do 
-                       openstack server create --image $im --flavor $fl --nic net-id=$nw --wait $ns$i
-                    done
-                ;;
-            esac
+    if [[ "$var" == "openstack" && "$option1" == "setup" ]]
+    then
+        clear
+        figlet -f standard OpenStack
+        echo ""
+        echo "Installing Openstack"
+        echo ""
+        yum install epel-release
+        yum update -y
+
+        setenforce 0
+        sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+        systemctl stop firewalld
+        systemctl stop NetworkManager
+        systemctl disable firewalld
+        systemctl disable NetworkManager
+
+        yum install -y figlet
+        yum install -y centos-release-openstack-train
+        yum install -y openstack-packstack
+        yum downgrade -y leatherman
+        packstack --gen-answer-file=/root/answer.txt
+
+        read -p "Create password login OpenStack Admin Dashboard : " passwd
+        
+        sed -i "s/^CONFIG_PROVISION_DEMO=.*/CONFIG_PROVISION_DEMO=n/g" /root/answer.txt
+        sed -i "s/^CONFIG_KEYSTONE_ADMIN_PW=.*/CONFIG_KEYSTONE_ADMIN_PW=${passwd}/g" /root/answer.txt
+        sed -i "s/^CONFIG_HORIZON_SSL=.*/CONFIG_HORIZON_SSL=n/g" /root/answer.txt
+        sed -i "s/^CONFIG_NTP_SERVERS=.*/CONFIG_NTP_SERVERS=0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org/g" /root/answer.txt
+
+        packstack --answer-file /root/answer.txt
+
+    elif [[ "$var" == "launch" && "$option1" == "instance" ]]
+    then
+        banner
+    elif [[ "$var" == "server" && "$option1" == "create" ]]
+    then
+        banner
+        echo ""
+        echo "SERVER CREATE"
+        echo "1. Single Server"
+        echo "2. Multiple Server"
+        echo ""
+        read -p "Input : " sc
+        case $sc in
+            1)
+                banner
+                echo ""
+                echo "SERVER CREATE"
+                echo ""
+                read -p "Name Server : " ns
+                openstack image list
+                read -p "Image : " im
+                openstack flavor list
+                read -p "Flavor : " fl
+                openstack
+                read -p "Network : " nw
+                openstack server create --image $im --flavor $fl --nic net-id=$nw --wait $ns
             ;;
+
             2)
                 clear
-                figlet -f standard openstack
-                echo "List Server"
-                openstack server list
-            ;;
-            3)
-                clear
-                figlet -f standard openstack
-                echo "List Server"
-                openstack server list
+                figlet -f standard OpenStack
                 echo ""
-                read -p "Select Server (Name/ID) : " slt
-                openstack server delete $slt
+                echo "SERVER CREATE"
+                echo ""
+                read -p "Name Server : " ns
+                openstack image list
+                read -p "Image : " im
+                openstack flavor list
+                read -p "Flavor : " fl
+                openstack
+                read -p "Network : " nw
+                read -p "Loop : " a
+                for ((i=1; i<=$a; i++))
+                do
+                    openstack server create --image $im --flavor $fl --nic net-id=$nw --wait $ns$i
+                done
             ;;
         esac
-
-# Manage Project Openstack
-    elif [ "$var" == "manage-project" ]
-    then
-        ls -la ~/
-        read -p "Keystone : " ks
-        source ~/$ks
-        figlet -f standard OpenStack
-        echo "1. Create Project"
-        echo "2. List Project"
-        echo "3. Delete Project"
-        echo ""
-        read -p "Input : " s1
-        case $s1 in
-            1)
-            echo "Project Create"
-            echo ""
-            echo "1. Single Project"
-            echo "2. Many Project"
-            echo "" 
-            read -p "Input : " ss1
-            case $ss1 in
-                1)
-                    clear
-                    figlet -f standard openstack
-                    echo "Project Create"
-                    echo ""
-                    openstack project list
-                    read -p "Name Project : " np
-                    read -p "Description : " desc
-                    openstack project create --description "$desc" $np
-                ;;
-                2)
-                    clear
-                    figlet -f standard openstack
-                    echo "Project Create"
-                    echo ""
-                    read -p "Name Project : " np
-                    read -p "Description : " desc
-                    read -p "Loop : " a
-
-                    for ((i=1;i<=$a;i++)); 
-                    do
-                        openstack project create --description "$desc" $np$i
-                    done
-                ;;
-            esac
-            ;;
-            2)
-                clear
-                figlet -f standard openstack
-                echo "List Project"
-                openstack project list
-            ;;
-            3)
-                clear
-                figlet -f standard openstack
-                echo "List Project"
-                openstack project list
-                echo ""
-                read -p "Select Project (Name) : " slt
-                openstack project delete $slt
-            ;;
-        esac
+    else
+        echo "Command not found"
     fi
 done
