@@ -38,6 +38,8 @@ do
         yum downgrade -y leatherman
         packstack --gen-answer-file=/root/answer.txt
 
+        banner
+        echo ""
         read -p "Create password login OpenStack Admin Dashboard : " passwd
         
         sed -i "s/^CONFIG_PROVISION_DEMO=.*/CONFIG_PROVISION_DEMO=n/g" /root/answer.txt
@@ -47,9 +49,6 @@ do
 
         packstack --answer-file /root/answer.txt
 
-    elif [[ "$var" == "launch" && "$option1" == "instance" ]]
-    then
-        banner
     elif [[ "$var" == "server" && "$option1" == "create" ]]
     then
         banner
